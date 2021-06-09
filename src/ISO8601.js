@@ -38,7 +38,7 @@ export class DateTimeSpec {
         }
 
         if (/T/.test(input)) {
-            const [dateInput, timeInput] = input.split("T");
+            const [dateInput, timeInput] = input.split("T", 2);
 
             const dt = {
                 ...parseTime(timeInput),
@@ -141,7 +141,7 @@ export class DateTimeIntervalSpec {
             throw new Error("Invalid range " + input);
         }
 
-        const [partA, partB] = input.split("/");
+        const [partA, partB] = input.split("/", 2);
 
         try {
             const first = new DateTimeSpec(partA);
