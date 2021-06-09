@@ -31,11 +31,16 @@ export class DateTimeSpec {
     /**
      *
      * @param {string} input
+     * @param {DateTimeSpec} relativeTo
      */
-    constructor (input) {
-        if (/^T/.test(input)) {
-            return Object.assign(this, { ...parseTime(input.substr(1)), start: null, end: null });
+    constructor (input, relativeTo = null) {
+        if (relativeTo) {
+            return Object.assign(this, parseEndDate(input, relativeTo));
         }
+
+        // if (/^T/.test(input)) {
+        //     return Object.assign(this, { ...parseTime(input.substr(1)), start: null, end: null });
+        // }
 
         if (/T/.test(input)) {
             const [dateInput, timeInput] = input.split("T", 2);
@@ -82,9 +87,9 @@ export class DateTimeSpec {
             return Object.assign(this, dt);
         }
 
-        if (/:/.test(input)) {
-            return Object.assign(this, { ...parseTime(input), start: null, end: null });
-        }
+        // if (/:/.test(input)) {
+        //     return Object.assign(this, { ...parseTime(input), start: null, end: null });
+        // }
 
         return Object.assign(this, parseDate(input));
     }
@@ -147,9 +152,9 @@ export class DateTimeIntervalSpec {
             const first = new DateTimeSpec(partA);
 
             try {
-                const last = new DateTimeSpec(partB);
+                const last = new DateTimeSpec(partB, first);
 
-                return Object.assign(this, { first, last, start: first.start, end: last.end });
+                return Object.assign(this, { first, last, start: first.start, end: last.start });
             } catch (e) {
                 try {
                     const period = parsePeriod(partB);
@@ -338,6 +343,148 @@ function parseDate (input) {
     }
 
     throw new Error("Invalid date format " + input);
+}
+
+/**
+ * @param {string} input
+ * @param {DateTimeSpec} startDate
+ */
+function parseEndDate (input, startDate) {
+    let [ maybeDatePart, timePart ] = input.split("T", 2);
+
+    /** @type {any} */
+    let candidate = Object.assign({}, startDate);
+
+    let m = /^(\d{2})$/.exec(maybeDatePart);
+    if (m) {
+        let { year, month, day, hour, minute, second } = startDate;
+
+        const start = new Date(startDate.start);
+        const end = new Date(startDate.end);
+
+        if (!timePart) {
+            if (typeof second === "number") {
+                second = +m[1];
+                start.setSeconds(second);
+                end.setSeconds(second + 1);
+            } else if (typeof minute === "number") {
+                minute = +m[1];
+                start.setMinutes(minute);
+                end.setMinutes(minute + 1);
+            } else if (typeof hour === "number") {
+                hour = +m[1];
+                start.setHours(hour);
+                end.setHours(hour + 1);
+            } else if (typeof day === "number") {
+                day = +m[1];
+                start.setDate(day);
+                end.setDate(day + 1);
+            } else if (typeof month === "number") {
+                month = +m[1];
+                start.setMonth(month - 1);
+                end.setMonth(month);
+            } else {
+                throw new Error("Invalid end date " + maybeDatePart);
+            }
+        }
+        else {
+            if (typeof day === "number") {
+                day = +m[1];
+                start.setDate(day);
+                end.setDate(day + 1);
+            } else if (typeof month === "number") {
+                month = +m[1];
+                start.setMonth(month - 1);
+                end.setMonth(month);
+            } else {
+                throw new Error("Invalid end date " + maybeDatePart);
+            }
+        }
+
+        candidate = { year, month, day, hour, minute, second, start, end };
+    }
+    else {
+        m = /^(\d{2})-(\d{2})$/.exec(maybeDatePart);
+        if (m) {
+            let { year, month, day, hour, minute, second } = startDate;
+
+            const start = new Date(startDate.start);
+            const end = new Date(startDate.end);
+
+            if (typeof day !== "number" || typeof month !== "number") {
+                throw new Error("Invalid end date " + maybeDatePart);
+            }
+
+            month = +m[1];
+            day = +m[2];
+
+            start.setMonth(month - 1);
+            end.setMonth(month - 1);
+
+            start.setDate(day);
+            end.setDate(day + 1);
+
+            candidate = { year, month, day, hour, minute, second, start, end };
+        } else {
+            timePart = maybeDatePart;
+        }
+    }
+
+    if (timePart) {
+        m = /^(\d{2}):(\d{2})$/.exec(timePart);
+        if (m) {
+            let { year, month, day, hour, minute, second } = candidate;
+
+            const start = new Date(candidate.start);
+            const end = new Date(candidate.end);
+
+            if (typeof second === "number") {
+                minute = +m[1];
+                second = +m[2];
+
+                start.setMinutes(minute);
+                end.setMinutes(minute);
+
+                start.setSeconds(second);
+                end.setSeconds(second + 1);
+            } else if (typeof minute === "number") {
+                hour = +m[1];
+                minute = +m[2];
+
+                start.setHours(hour);
+                end.setHours(hour);
+
+                start.setMinutes(minute);
+                end.setMinutes(minute + 1);
+            } else {
+                throw new Error("Invalid end date " + input);
+            }
+
+            candidate = { year, month, day, hour, minute, second, start, end };
+        } else {
+            const t = parseTime(timePart);
+
+            const start = new Date(candidate.start);
+            const end = new Date(candidate.end);
+
+            start.setHours(t.hour);
+            end.setHours(t.hour);
+
+            start.setMinutes(t.minute);
+            end.setMinutes(t.minute);
+
+            start.setSeconds(t.second);
+            end.setSeconds(t.second + 1);
+
+            Object.assign(candidate, t, { start, end });
+        }
+    }
+
+    if (candidate) {
+        return candidate;
+    }
+
+    return new DateTimeSpec(input);
 }
 
 /**
@@ -577,16 +724,31 @@ export function* getIntervalInstances (value) {
         repetitions: 0,
     };
 
-    // +2 because repetitions spec doesn't include the very start date or the end of the 0th period
+    // +1 because repetitions spec doesn't include the very start date or the end of the 0th period
     for (let i = 0; i < value.repetitions + 1; i++) {
         yield prevValue;
-        prevValue = {
-            start: prevValue.end,
-            end: addDateAndPeriod(prevValue.end, value.period),
-            period: value.period,
-            first: null,
-            last: null,
-            repetitions: null,
-        };
+        if (value.period) {
+            prevValue = {
+                start: prevValue.end,
+                end: addDateAndPeriod(prevValue.end, value.period),
+                period: value.period,
+                first: null,
+                last: null,
+                repetitions: null,
+            };
+        } else {
+            // Many errors due to leap days/seconds
+            // TODO: Implement {DateTime - DateTime = Period}
+            const delta = +prevValue.end - +prevValue.start;
+
+            prevValue = {
+                start: prevValue.end,
+                end: new Date(+prevValue.end + delta),
+                period: null,
+                first: null,
+                last: null,
+                repetitions: null,
+            };
+        }
     }
 }

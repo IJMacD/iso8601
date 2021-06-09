@@ -4,7 +4,7 @@ import { DateTimeIntervalSpec, DateTimeSpec, getIntervalInstances } from "../ISO
 
 export default function ISO8601TestPage () {
     const [ inputValue, setInputValue ] = useState("");
-    const testValues = ["2", "20", "202", "2021", "2021-01", "2021-01-18", "2021-01-18T15", "2021-01-18T15:30", "2021-01-18T15:30:00", "2021-W03", "2021-018", "2021-018T15", "2021-018T15:30", "2021-018T15:30:00", "2021-018T15:30:00.5"];
+    const testValues = ["2", "20", "202", "2021", "2021-01", "2021-01-18", "2021-01-18T15", "2021-01-18T15:30", "2021-01-18T15:30:00", "2021-W03", "2021-018", "2021-018T15", "2021-018T15:30", "2021-018T15:30:00", "2021-018T15:30:00.5", "2021-018/P1M", "2021-018/P1DT1M", "R5/2021-018/P1W", "R3/2012-10-01T14:12:01/10T16:19:35", "R2/2012-10-01T14:12/12-10T16:19", "R2/2012-10-01T14:12:01/12-10T16:19" ];
 
     let convertedInput, error;
 
@@ -20,10 +20,10 @@ export default function ISO8601TestPage () {
         <div style={{padding: "2em", display: "flex", flexDirection: "column" }}>
             <input value={inputValue} onChange={e => setInputValue(e.target.value)} style={{margin:4,fontSize:"1.5em"}} placeholder="Input" />
             { error && <p style={{color:"red"}}>{error}</p> }
-            { convertedInput && <DateTimePreview value={convertedInput} label={inputValue} /> }
+            { convertedInput && <DateTimePreview value={convertedInput} label={`Label: ${inputValue}`} /> }
             <h2>Test Values</h2>
             {
-                testValues.map(v => <DateTimePreview value={ISO8601.parse(v)} label={v} />)
+                testValues.map((v, i) => <DateTimePreview value={ISO8601.parse(v)} label={`Label: ${v}`} key={i} />)
             }
         </div>
     )
@@ -49,7 +49,7 @@ function DateTimePreview ({ value, label = "" }) {
 
     return (
         <div style={boxStyle} onClick={() => setShowCode(!showCode)}>
-            { label && <p style={labelStyle}>Input: {label}</p> }
+            { label && <p style={labelStyle}>{label}</p> }
             <p style={pStyle}>
                 <time dateTime={value.start.toISOString()}>{dateFormatter.format(value.start)}</time>
                 <span style={hintStyle}> ≤ {type} &lt; </span>
@@ -61,9 +61,12 @@ function DateTimePreview ({ value, label = "" }) {
                         <time dateTime={d.start.toISOString()}>{dateFormatter.format(d.start)}</time>
                         <span style={hintStyle}> ≤ {type} &lt; </span>
                         <time dateTime={d.end.toISOString()}>{dateFormatter.format(d.end)}</time>
-                        {' '}({getOrdinal(i + 1)} Repetition)
+                        {' '}<span style={hintStyle}>({getOrdinal(i + 1)} Repetition)</span>
                     </p>
                 )
+            }
+            { value instanceof DateTimeIntervalSpec && repetitions.length < value.repetitions &&
+                <p style={{...pStyle, ...hintStyle}}>&hellip; {value.repetitions - repetitions.length} more not shown</p>
             }
             { showCode && <code>{JSON.stringify(value)}</code> }
         </div>
