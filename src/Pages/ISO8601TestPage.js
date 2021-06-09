@@ -58,7 +58,10 @@ function DateTimePreview ({ value, label = "" }) {
             {
                 repetitions.map((d,i) =>
                     <p style={pStyle} key={i}>
-                        {getOrdinal(i + 1)} Repetition: <time dateTime={d.toISOString()}>{dateFormatter.format(d)}</time>
+                        <time dateTime={d.start.toISOString()}>{dateFormatter.format(d.start)}</time>
+                        <span style={hintStyle}> ≤ {type} &lt; </span>
+                        <time dateTime={d.end.toISOString()}>{dateFormatter.format(d.end)}</time>
+                        {' '}({getOrdinal(i + 1)} Repetition)
                     </p>
                 )
             }
@@ -72,10 +75,10 @@ function DateTimePreview ({ value, label = "" }) {
  */
 function getRepetitions(value, maxRepetitions = 10) {
     if (value.repetitions === Infinity) {
-        return generatorToArray(getIntervalInstances(value), maxRepetitions + 2).slice(2);
+        return generatorToArray(getIntervalInstances(value), maxRepetitions + 1).slice(1);
     }
 
-    return [ ...ISO8601.getIntervalInstances(value) ].slice(2, 2 + maxRepetitions);
+    return [ ...ISO8601.getIntervalInstances(value) ].slice(1, 1 + maxRepetitions);
 }
 
 function getOrdinal (n) {

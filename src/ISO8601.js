@@ -565,13 +565,28 @@ function subtractPeriodFromDateTime (period, dateTime) {
 
 /**
  * @param {DateTimeIntervalSpec} value
+ * @returns {Generator<DateTimeIntervalSpec>}
  */
 export function* getIntervalInstances (value) {
-    let prevValue = value.start;
+    let prevValue = {
+        start: value.start,
+        end: value.end,
+        period: value.period,
+        first: null,
+        last: null,
+        repetitions: 0,
+    };
 
     // +2 because repetitions spec doesn't include the very start date or the end of the 0th period
-    for (let i = 0; i < value.repetitions + 2; i++) {
+    for (let i = 0; i < value.repetitions + 1; i++) {
         yield prevValue;
-        prevValue = addDateAndPeriod(prevValue, value.period);
+        prevValue = {
+            start: prevValue.end,
+            end: addDateAndPeriod(prevValue.end, value.period),
+            period: value.period,
+            first: null,
+            last: null,
+            repetitions: null,
+        };
     }
 }
