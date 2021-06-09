@@ -365,22 +365,47 @@ function parseEndDate (input, startDate) {
         if (!timePart) {
             if (typeof second === "number") {
                 second = +m[1];
+
+                if (second > 61) {
+                    throw new Error("Are you sure you want second to be " + second);
+                }
+
                 start.setSeconds(second);
                 end.setSeconds(second + 1);
             } else if (typeof minute === "number") {
                 minute = +m[1];
+
+                if (minute > 60) {
+                    throw new Error("Are you sure you want minute to be " + minute);
+                }
+
                 start.setMinutes(minute);
                 end.setMinutes(minute + 1);
             } else if (typeof hour === "number") {
                 hour = +m[1];
+
+                if (hour > 23) {
+                    throw new Error("Are you sure you want hout to be " + hour);
+                }
+
                 start.setHours(hour);
                 end.setHours(hour + 1);
             } else if (typeof day === "number") {
                 day = +m[1];
+
                 start.setDate(day);
                 end.setDate(day + 1);
+
+                if (day > getMonthLength(start)) {
+                    throw new Error("Are you sure you want day to be " + day);
+                }
             } else if (typeof month === "number") {
                 month = +m[1];
+
+                if (month > 12) {
+                    throw new Error("Are you sure you want month to be " + month);
+                }
+
                 start.setMonth(month - 1);
                 end.setMonth(month);
             } else {
@@ -392,10 +417,18 @@ function parseEndDate (input, startDate) {
                 day = +m[1];
                 start.setDate(day);
                 end.setDate(day + 1);
+
+                if (day > getMonthLength(start)) {
+                    throw new Error("Are you sure you want day to be " + day);
+                }
             } else if (typeof month === "number") {
                 month = +m[1];
                 start.setMonth(month - 1);
                 end.setMonth(month);
+
+                if (month > 12) {
+                    throw new Error("Are you sure you want month to be " + month);
+                }
             } else {
                 throw new Error("Invalid end date " + maybeDatePart);
             }
@@ -424,8 +457,20 @@ function parseEndDate (input, startDate) {
             start.setDate(day);
             end.setDate(day + 1);
 
+            if (month > 12) {
+                throw new Error("Are you sure you want month to be " + month);
+            }
+
+            if (day > getMonthLength(start)) {
+                throw new Error("Are you sure you want day to be " + day);
+            }
+
             candidate = { year, month, day, hour, minute, second, start, end };
         } else {
+            try {
+                return parseDate(maybeDatePart);
+            } catch (e) {}
+
             timePart = maybeDatePart;
         }
     }
@@ -456,6 +501,14 @@ function parseEndDate (input, startDate) {
 
                 start.setMinutes(minute);
                 end.setMinutes(minute + 1);
+
+                if (hour > 23) {
+                    throw new Error("Are you sure you want hour to be " + hour);
+                }
+
+                if (minute > 60) {
+                    throw new Error("Are you sure you want minute to be " + minute);
+                }
             } else {
                 throw new Error("Invalid end date " + input);
             }
@@ -477,6 +530,18 @@ function parseEndDate (input, startDate) {
             end.setSeconds(t.second + 1);
 
             Object.assign(candidate, t, { start, end });
+
+            if (t.hour > 23) {
+                throw new Error("Are you sure you want hours to be " + t.hour);
+            }
+
+            if (t.minute > 60) {
+                throw new Error("Are you sure you want minutes to be " + t.minute);
+            }
+
+            if (t.second > 61) {
+                throw new Error("Are you sure you want seconds to be " + t.second);
+            }
         }
     }
 

@@ -20,10 +20,10 @@ export default function ISO8601TestPage () {
         <div style={{padding: "2em", display: "flex", flexDirection: "column" }}>
             <input value={inputValue} onChange={e => setInputValue(e.target.value)} style={{margin:4,fontSize:"1.5em"}} placeholder="Input" />
             { error && <p style={{color:"red"}}>{error}</p> }
-            { convertedInput && <DateTimePreview value={convertedInput} label={`Label: ${inputValue}`} /> }
+            { convertedInput && <DateTimePreview value={convertedInput} label={`Input: ${inputValue}`} /> }
             <h2>Test Values</h2>
             {
-                testValues.map((v, i) => <DateTimePreview value={ISO8601.parse(v)} label={`Label: ${v}`} key={i} />)
+                testValues.map((v, i) => <DateTimePreview value={ISO8601.parse(v)} label={`Input: ${v}`} key={i} />)
             }
         </div>
     )
