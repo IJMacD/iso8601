@@ -200,62 +200,114 @@ export function parse (input) {
  */
 function parseDate (input) {
     if (/^\d$/.test(input)) {
+        const start = new Date(+input * 1000, 0, 1);
+        // Catch date constructor problems with years 0 to 99
+        start.setFullYear(+input * 1000);
+
+        const end = new Date((+input + 1) * 1000, 0, 1);
+        // Catch date constructor problems with years 0 to 99
+        end.setFullYear((+input + 1) * 1000);
+
         return {
             millennium: +input,
-            start: new Date(+input * 1000, 0, 1),
-            end: new Date((+input + 1) * 1000, 0, 1),
+            start,
+            end,
         };
     }
 
     if (/^\d\d$/.test(input)) {
+        const start = new Date(+input * 100, 0, 1);
+        // Catch date constructor problems with years 0 to 99
+        start.setFullYear(+input * 100);
+
+        const end = new Date((+input + 1) * 100, 0, 1);
+        // Catch date constructor problems with years 0 to 99
+        end.setFullYear((+input + 1) * 100);
+
         return {
             century: +input,
-            start: new Date(+input * 100, 0, 1),
-            end: new Date((+input + 1) * 100, 0, 1),
+            start,
+            end,
         };
     }
 
     if (/^\d{3}$/.test(input)) {
+        const start = new Date(+input * 10, 0, 1);
+        // Catch date constructor problems with years 0 to 99
+        start.setFullYear(+input * 10);
+
+        const end = new Date((+input + 1) * 10, 0, 1);
+        // Catch date constructor problems with years 0 to 99
+        end.setFullYear((+input + 1) * 10);
+
         return {
             decade: +input,
-            start: new Date(+input * 10, 0, 1),
-            end: new Date((+input + 1) * 10, 0, 1),
+            start,
+            end,
         };
     }
 
     if (/^\d{4}$/.test(input)) {
+        const start = new Date(+input, 0, 1);
+        // Catch date constructor problems with years 0 to 99
+        start.setFullYear(+input);
+
+        const end = new Date(+input + 1, 0, 1);
+        // Catch date constructor problems with years 0 to 99
+        end.setFullYear(+input + 1);
+
         return {
             year: +input,
-            start: new Date(+input, 0, 1),
-            end: new Date(+input + 1, 0, 1),
+            start,
+            end,
         };
     }
 
     let m = /^(\d{4})-(\d{2})$/.exec(input);
     if (m) {
+        const start = new Date(+m[1], +m[2] - 1, 1);
+        // Catch date constructor problems with years 0 to 99
+        start.setFullYear(+m[1]);
+
+        const end = new Date(+m[1], +m[2], 1);
+        // Catch date constructor problems with years 0 to 99
+        end.setFullYear(+m[1]);
+
         return {
             year: +m[1],
             month: +m[2],
-            start: new Date(+m[1], +m[2] - 1, 1),
-            end: new Date(+m[1], +m[2], 1),
+            start,
+            end,
         };
     }
 
     m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(input);
     if (m) {
+        const start = new Date(+m[1], +m[2] - 1, +m[3]);
+        // Catch date constructor problems with years 0 to 99
+        start.setFullYear(+m[1]);
+
+        const end = new Date(+m[1], +m[2] - 1, +m[3] + 1);
+        // Catch date constructor problems with years 0 to 99
+        end.setFullYear(+m[1]);
+
         return {
             year: +m[1],
             month: +m[2],
             day: +m[3],
-            start: new Date(+m[1], +m[2] - 1, +m[3]),
-            end: new Date(+m[1], +m[2] - 1, +m[3] + 1),
+            start,
+            end,
         };
     }
 
     m = /^(\d{4})-W(\d{2})$/.exec(input);
     if (m) {
+        const s = new Date(+m[1], 0, 1);
+        // Catch date constructor problems with years 0 to 99
+        s.setFullYear(+m[1]);
+
         // TODO: adjust for year/weekYear mis-match when necessary
-        const start = new Date(+new Date(+m[1], 0, 1) + ((+m[2] - 1) * 7 * 86400000));
+        const start = new Date(+s + ((+m[2] - 1) * 7 * 86400000));
 
         // TODO: Check how often the following trick works
         //       (It works for 2021 at least)
@@ -271,7 +323,11 @@ function parseDate (input) {
 
     m = /^(\d{4})-(\d{3})$/.exec(input);
     if (m) {
-        const start = new Date(+new Date(+m[1], 0, 1) + ((+m[2] - 1) * 86400000));
+        const s = new Date(+m[1], 0, 1);
+        // Catch date constructor problems with years 0 to 99
+        s.setFullYear(+m[1]);
+
+        const start = new Date(+s + ((+m[2] - 1) * 86400000));
 
         return {
             year: +m[1],
