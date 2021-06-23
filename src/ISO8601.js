@@ -298,17 +298,17 @@ function parseDate (input) {
 
     m = /^-?(\d{2})-?(\d{2})$/.exec(input);
     if (m) {
-        const start = new Date(year, +m[2] - 1, +m[2]);
+        const start = new Date(year, +m[1] - 1, +m[2]);
         // Catch date constructor problems with years 0 to 99
         start.setFullYear(year);
 
-        const end = new Date(year, +m[2] - 1, +m[2] + 1);
+        const end = new Date(year, +m[1] - 1, +m[2] + 1);
         // Catch date constructor problems with years 0 to 99
         end.setFullYear(year);
 
         return {
             year,
-            month: +m[2],
+            month: +m[1],
             day: +m[2],
             start,
             end,
