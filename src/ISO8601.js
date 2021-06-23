@@ -334,6 +334,10 @@ function parseDate (input) {
 
         const start = new Date(+s + ((week - 1) * 7 * 86400000));
 
+        if (week === 53 && start.getFullYear() !== year) {
+            throw new Error("Invalid date format " + input);
+        }
+
         return {
             weekYear: year,
             week,
@@ -366,6 +370,10 @@ function parseDate (input) {
         const start = new Date(+s + ((week - 1) * 7 * 86400000));
 
         start.setDate(start.getDate() + weekDay - 1);
+
+        if (week === 53 && start.getFullYear() !== year) {
+            throw new Error("Invalid date format " + input);
+        }
 
         return {
             weekYear: year,
