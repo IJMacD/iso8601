@@ -17,6 +17,16 @@ export default function ISO8601TestPage () {
         document.title = title;
     }, [inputValue]);
 
+    useEffect(() => {
+        function cb () {
+            setInputValue(window.location.hash.substr(1));
+        }
+
+        window.addEventListener("hashchange", cb);
+
+        return () => window.removeEventListener("hashchange", cb);
+    }, []);
+
     let convertedInput, error;
 
     if (inputValue) {
