@@ -18,6 +18,10 @@ export class DateTimeSpec {
     /** @type {?number} */
     second;
     /** @type {?number} */
+    zoneHour;
+    /** @type {?number} */
+    zoneMinute;
+    /** @type {?number} */
     weekYear;
     /** @type {?number} */
     week;
@@ -50,8 +54,10 @@ export class DateTimeSpec {
                 ...parseDate(dateInput),
             };
 
-            if (typeof dt.day !== "number" && typeof dt.yearDay !== "number") {
-                console.log(dt);
+            if (typeof dt.day !== "number"
+                && typeof dt.yearDay !== "number"
+                && typeof dt.weekDay !== "number"
+            ) {
                 // We didn't have a single day specified so a time is invalid
                 throw new Error("Invalid data time format " + input);
             }
@@ -84,6 +90,21 @@ export class DateTimeSpec {
                 dt.end.setHours(dt.hour + 1);
             }
 
+            if (typeof dt.zoneHour === "number") {
+                let offset = 0;
+                if (typeof dt.zoneMinute === "number") {
+                    offset = dt.zoneHour * 60 + Math.sign(dt.zoneHour) * dt.zoneMinute;
+                } else {
+                    offset = dt.zoneHour * 60;
+                }
+
+                const currOffset = dt.start.getTimezoneOffset();
+                const delta = -(offset + currOffset) * 60 * 1000;
+
+                dt.start.setTime(+dt.start + delta);
+                dt.end.setTime(+dt.end + delta);
+            }
+
             return Object.assign(this, dt);
         }
 
@@ -100,6 +121,8 @@ export class DateTimeSpec {
  * @property {number} [hour]
  * @property {number} [minute]
  * @property {number} [second]
+ * @property {number} [zoneHour]
+ * @property {number} [zoneMinute]
  */
 
 /**
@@ -253,7 +276,7 @@ function parseDate (input) {
     }
 
     // Check for four or more digit year
-    let m = /^[+-]\d{4,}|\d{4}/.exec(input);
+    let m = /^([+-]\d{4,}|\d{4})/.exec(input);
 
     if (!m) {
         throw new Error("Invalid date format (bad year) " + input);
@@ -625,29 +648,50 @@ function parseEndDate (input, startDate) {
  * @returns {TimeSpec}
  */
 function parseTime (input) {
+    let m;
 
-    let m = /^(\d{2})$/.exec(input);
+    let out = {};
+
+    m = /(?:([+−-]\d\d)(?::?(\d\d))?|Z)$/.exec(input);
+
     if (m) {
-        return {
-            hour: +m[1],
-        };
+        if (m[1]) {
+            out.zoneHour = +m[1].replace("−", "-");
+
+            if (m[2]) {
+                out.zoneMinute = +m[2];
+            }
+        } else {
+            // We must have had "Z"
+            out.zoneHour = 0;
+            out.zoneMinute = 0;
+        }
+
+        input = input.substr(0, input.length - m[0].length);
+    }
+
+    m = /^(\d{2})$/.exec(input);
+    if (m) {
+        out.hour = +m[1];
+
+        return out;
     }
 
     m = /^(\d{2}):?(\d{2})$/.exec(input);
     if (m) {
-        return {
-            hour: +m[1],
-            minute: +m[2],
-        };
+        out.hour = +m[1];
+        out.minute = +m[2];
+
+        return out;
     }
 
     m = /^(\d{2}):?(\d{2}):?(\d\d(?:\.\d+)?)$/.exec(input);
     if (m) {
-        return {
-            hour: +m[1],
-            minute: +m[2],
-            second: +m[3],
-        };
+        out.hour = +m[1];
+        out.minute = +m[2];
+        out.second = +m[3];
+
+        return out;
     }
 
     throw new Error("Invalid time format " + input);
