@@ -252,93 +252,141 @@ function parseDate (input) {
         };
     }
 
-    if (/^\d{4}$/.test(input)) {
-        const start = new Date(+input, 0, 1);
-        // Catch date constructor problems with years 0 to 99
-        start.setFullYear(+input);
+    // Check for four or more digit year
+    let m = /^[+-]\d{4,}|\d{4}/.exec(input);
 
-        const end = new Date(+input + 1, 0, 1);
+    if (!m) {
+        throw new Error("Invalid date format (bad year) " + input);
+    }
+
+    const year = +m[0];
+    input = input.substr(m[0].length);
+
+    if (input.length === 0) {
+        const start = new Date(year, 0, 1);
         // Catch date constructor problems with years 0 to 99
-        end.setFullYear(+input + 1);
+        start.setFullYear(year);
+
+        const end = new Date(year + 1, 0, 1);
+        // Catch date constructor problems with years 0 to 99
+        end.setFullYear(year + 1);
 
         return {
-            year: +input,
+            year,
             start,
             end,
         };
     }
 
-    let m = /^(\d{4})-(\d{2})$/.exec(input);
+    m = /^-(\d{2})$/.exec(input);
     if (m) {
-        const start = new Date(+m[1], +m[2] - 1, 1);
+        const start = new Date(year, +m[1] - 1, 1);
         // Catch date constructor problems with years 0 to 99
-        start.setFullYear(+m[1]);
+        start.setFullYear(year);
 
-        const end = new Date(+m[1], +m[2], 1);
+        const end = new Date(year, +m[1], 1);
         // Catch date constructor problems with years 0 to 99
-        end.setFullYear(+m[1]);
+        end.setFullYear(year);
 
         return {
-            year: +m[1],
+            year,
+            month: +m[1],
+            start,
+            end,
+        };
+    }
+
+    m = /^-?(\d{2})-?(\d{2})$/.exec(input);
+    if (m) {
+        const start = new Date(year, +m[2] - 1, +m[2]);
+        // Catch date constructor problems with years 0 to 99
+        start.setFullYear(year);
+
+        const end = new Date(year, +m[2] - 1, +m[2] + 1);
+        // Catch date constructor problems with years 0 to 99
+        end.setFullYear(year);
+
+        return {
+            year,
             month: +m[2],
+            day: +m[2],
             start,
             end,
         };
     }
 
-    m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(input);
+    m = /^-?W(\d{2})$/.exec(input);
     if (m) {
-        const start = new Date(+m[1], +m[2] - 1, +m[3]);
-        // Catch date constructor problems with years 0 to 99
-        start.setFullYear(+m[1]);
 
-        const end = new Date(+m[1], +m[2] - 1, +m[3] + 1);
-        // Catch date constructor problems with years 0 to 99
-        end.setFullYear(+m[1]);
+        const week = +m[1];
+        if (week < 1 || week > 53) {
+            throw new Error("Invalid date format " + input);
+        }
 
-        return {
-            year: +m[1],
-            month: +m[2],
-            day: +m[3],
-            start,
-            end,
-        };
-    }
-
-    m = /^(\d{4})-W(\d{2})$/.exec(input);
-    if (m) {
-        const s = new Date(+m[1], 0, 1);
+        const s = new Date(year, 0, 1);
         // Catch date constructor problems with years 0 to 99
-        s.setFullYear(+m[1]);
+        s.setFullYear(year);
 
         // TODO: adjust for year/weekYear mis-match when necessary
-        const start = new Date(+s + ((+m[2] - 1) * 7 * 86400000));
+        const start = new Date(+s + ((week - 1) * 7 * 86400000));
 
         // TODO: Check how often the following trick works
         //       (It works for 2021 at least)
         start.setDate(start.getDate() - start.getDay() + 8);
 
         return {
-            weekYear: +m[1],
-            week: +m[2],
+            weekYear: year,
+            week,
             start,
             end: new Date(start.getFullYear(), start.getMonth(), start.getDate() + 7),
         };
     }
 
-    m = /^(\d{4})-(\d{3})$/.exec(input);
+    m = /^-?W(\d{2})-?(\d)$/.exec(input);
     if (m) {
-        const s = new Date(+m[1], 0, 1);
-        // Catch date constructor problems with years 0 to 99
-        s.setFullYear(+m[1]);
+        const week = +m[1];
+        if (week < 1 || week > 53) {
+            throw new Error("Invalid date format " + input);
+        }
 
-        const start = new Date(+s + ((+m[2] - 1) * 86400000));
+        const weekDay = +m[2];
+        if (weekDay < 1 || weekDay > 7) {
+            throw new Error("Invalid date format " + input);
+        }
+
+        const s = new Date(year, 0, 1);
+        // Catch date constructor problems with years 0 to 99
+        s.setFullYear(year);
+
+        // TODO: adjust for year/weekYear mis-match when necessary
+        const start = new Date(+s + ((week - 1) * 7 * 86400000));
+
+        // TODO: Check how often the following trick works
+        //       (It works for 2021 at least)
+        start.setDate(start.getDate() - start.getDay() + 7 + weekDay);
 
         return {
-            year: +m[1],
-            yearDay: +m[2],
+            weekYear: year,
+            week,
+            weekDay,
             start,
-            end: new Date(+m[1], start.getMonth(), start.getDate() + 1),
+            end: new Date(start.getFullYear(), start.getMonth(), start.getDate() + 7),
+        };
+    }
+
+    m = /^-?(\d{3})$/.exec(input);
+    if (m) {
+        const s = new Date(year, 0, 1);
+        // Catch date constructor problems with years 0 to 99
+        s.setFullYear(year);
+
+        const start = new Date(+s + ((+m[1] - 1) * 86400000));
+
+        return {
+            year,
+            yearDay: +m[1],
+            start,
+            end: new Date(year, start.getMonth(), start.getDate() + 1),
         };
     }
 
@@ -565,7 +613,7 @@ function parseTime (input) {
         };
     }
 
-    m = /^(\d{2}):(\d{2})$/.exec(input);
+    m = /^(\d{2}):?(\d{2})$/.exec(input);
     if (m) {
         return {
             hour: +m[1],
@@ -573,7 +621,7 @@ function parseTime (input) {
         };
     }
 
-    m = /^(\d{2}):(\d{2}):(\d\d(?:\.\d+)?)$/.exec(input);
+    m = /^(\d{2}):?(\d{2}):?(\d\d(?:\.\d+)?)$/.exec(input);
     if (m) {
         return {
             hour: +m[1],

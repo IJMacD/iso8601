@@ -4,7 +4,7 @@ import { DateTimeIntervalSpec, DateTimeSpec, getIntervalInstances } from "../ISO
 
 export default function ISO8601TestPage () {
     const [ inputValue, setInputValue ] = useState("");
-    const testValues = ["2", "20", "202", "2021", "2021-01", "2021-01-18", "2021-01-18T15", "2021-01-18T15:30", "2021-01-18T15:30:00", "2021-W03", "2021-018", "2021-018T15", "2021-018T15:30", "2021-018T15:30:00", "2021-018T15:30:00.5", "2021-018/P1M", "2021-018/P1DT1M", "R5/2021-018/P1W", "R3/2012-10-01T14:12:01/10T16:19:35", "R2/2012-10-01T14:12/12-10T16:19", "R2/2012-10-01T14:12:01/12-10T16:19" ];
+    const testValues = ["2", "20", "202", "2021", "2021-01", "2021-01-18", "2021-01-18T15", "2021-01-18T15:30", "2021-01-18T15:30:00", "2021-W03", "2021-W03-1", "2021-018", "20210623", "2021174", "2021W25", "2021W253", "2021-018T15", "2021-018T15:30", "2021-018T15:30:00", "2021-018T15:30:00.5", "2021-018/P1M", "2021-018/P1DT1M", "R5/2021-018/P1W", "R3/2012-10-01T14:12:01/10T16:19:35", "R2/2012-10-01T14:12/12-10T16:19", "R2/2012-10-01T14:12:01/12-10T16:19" ];
 
     let convertedInput, error;
 
@@ -37,7 +37,12 @@ export default function ISO8601TestPage () {
  */
 function DateTimePreview ({ value, label = "" }) {
     const [ showCode, setShowCode ] = useState(false);
-    const dateFormatter = new Intl.DateTimeFormat([], { dateStyle: "long", timeStyle: "long" });
+
+    // @ts-ignore
+    const dateFormatter = (typeof value.year === "number" && value.year < 0) ?
+        { format: (/** @type {Date} */ d) => d.toISOString() }
+        : new Intl.DateTimeFormat([], { dateStyle: "long", timeStyle: "long" });
+
     const pStyle = { margin: 0 };
     const labelStyle = { ...pStyle, fontFamily: "monospace", color: "#333" };
     const hintStyle = {color:"#666",fontSize:"0.8em"};
@@ -46,6 +51,10 @@ function DateTimePreview ({ value, label = "" }) {
     const type = value instanceof DateTimeSpec ? "DateTime" : "DateTimeInterval";
 
     const repetitions = value instanceof DateTimeIntervalSpec ? getRepetitions(value, 100) : [];
+
+    if (!isValidDate(value.start) || !isValidDate(value.end)) {
+        return <code style={{color:"darkred"}}>Javascript Date error {JSON.stringify(value)}</code>;
+    }
 
     return (
         <div style={boxStyle} onClick={() => setShowCode(!showCode)}>
@@ -113,4 +122,11 @@ function generatorToArray (generator, maxLength) {
     }
 
     return list;
+}
+
+/**
+ * @param {Date} date
+ */
+function isValidDate (date) {
+    return !isNaN(+date);
 }
