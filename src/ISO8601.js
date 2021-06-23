@@ -62,32 +62,33 @@ export class DateTimeSpec {
                 throw new Error("Invalid data time format " + input);
             }
 
-            // Since we have a time we'll reset the parsed date back to the same for start/end
-            dt.end.setDate(dt.start.getDate());
+            if (typeof dt.hour === "number") {
+                // Since we have a time we'll reset the parsed date back to the same for start/end
+                dt.end.setDate(dt.start.getDate());
 
-            // Since we had a time component we *must* at least have an hour component
-            dt.start.setHours(dt.hour);
+                dt.start.setHours(dt.hour);
 
-            // Now start finding what granularity was provided
-            if (typeof dt.minute === "number") {
-                dt.end.setHours(dt.hour);
-                dt.start.setMinutes(dt.minute);
+                // Now start finding what granularity was provided
+                if (typeof dt.minute === "number") {
+                    dt.end.setHours(dt.hour);
+                    dt.start.setMinutes(dt.minute);
 
-                if (typeof dt.second === "number") {
-                    dt.end.setMinutes(dt.minute);
+                    if (typeof dt.second === "number") {
+                        dt.end.setMinutes(dt.minute);
 
-                    dt.start.setSeconds(dt.second);
-                    if (dt.second % 1) {
-                        dt.start.setMilliseconds((dt.second % 1) * 1000);
-                        dt.end.setMilliseconds(dt.start.getMilliseconds() + 1);
+                        dt.start.setSeconds(dt.second);
+                        if (dt.second % 1) {
+                            dt.start.setMilliseconds((dt.second % 1) * 1000);
+                            dt.end.setMilliseconds(dt.start.getMilliseconds() + 1);
+                        } else {
+                            dt.end.setSeconds(dt.second + 1);
+                        }
                     } else {
-                        dt.end.setSeconds(dt.second + 1);
+                        dt.end.setMinutes(dt.minute + 1);
                     }
                 } else {
-                    dt.end.setMinutes(dt.minute + 1);
+                    dt.end.setHours(dt.hour + 1);
                 }
-            } else {
-                dt.end.setHours(dt.hour + 1);
             }
 
             if (typeof dt.zoneHour === "number") {
@@ -668,6 +669,11 @@ function parseTime (input) {
         }
 
         input = input.substr(0, input.length - m[0].length);
+    }
+
+    // Support 20210623TZ
+    if (m && input.length == 0) {
+        return out;
     }
 
     m = /^(\d{2})$/.exec(input);
