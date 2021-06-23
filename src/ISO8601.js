@@ -327,12 +327,12 @@ function parseDate (input) {
         // Catch date constructor problems with years 0 to 99
         s.setFullYear(year);
 
-        // TODO: adjust for year/weekYear mis-match when necessary
-        const start = new Date(+s + ((week - 1) * 7 * 86400000));
+        // getDay(): 0 - 6; Sun - Mon
+        const offset = [2, 1, 0, -1, -2, 4, 3][s.getDay()];
 
-        // TODO: Check how often the following trick works
-        //       (It works for 2021 at least)
-        start.setDate(start.getDate() - start.getDay() + 8);
+        s.setDate(offset);
+
+        const start = new Date(+s + ((week - 1) * 7 * 86400000));
 
         return {
             weekYear: year,
@@ -358,19 +358,21 @@ function parseDate (input) {
         // Catch date constructor problems with years 0 to 99
         s.setFullYear(year);
 
-        // TODO: adjust for year/weekYear mis-match when necessary
+        // getDay(): 0 - 6; Sun - Mon
+        const offset = [2, 1, 0, -1, -2, 4, 3][s.getDay()];
+
+        s.setDate(offset);
+
         const start = new Date(+s + ((week - 1) * 7 * 86400000));
 
-        // TODO: Check how often the following trick works
-        //       (It works for 2021 at least)
-        start.setDate(start.getDate() - start.getDay() + 7 + weekDay);
+        start.setDate(start.getDate() + weekDay - 1);
 
         return {
             weekYear: year,
             week,
             weekDay,
             start,
-            end: new Date(start.getFullYear(), start.getMonth(), start.getDate() + 7),
+            end: new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1),
         };
     }
 
