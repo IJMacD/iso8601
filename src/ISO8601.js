@@ -304,17 +304,23 @@ function parseDate (input) {
 
     m = /^-(\d{2})$/.exec(input);
     if (m) {
-        const start = new Date(year, +m[1] - 1, 1);
+        const month = +m[1];
+
+        if (month < 1 || month > 12) {
+            throw new Error("Invalid date format " + input);
+        }
+
+        const start = new Date(year, month - 1, 1);
         // Catch date constructor problems with years 0 to 99
         start.setFullYear(year);
 
-        const end = new Date(year, +m[1], 1);
+        const end = new Date(year, month, 1);
         // Catch date constructor problems with years 0 to 99
         end.setFullYear(year);
 
         return {
             year,
-            month: +m[1],
+            month,
             start,
             end,
         };
@@ -322,18 +328,30 @@ function parseDate (input) {
 
     m = /^-?(\d{2})-?(\d{2})$/.exec(input);
     if (m) {
-        const start = new Date(year, +m[1] - 1, +m[2]);
+        const month = +m[1];
+        const day = +m[2];
+
+        if (month < 1 || month > 12) {
+            throw new Error("Invalid date format " + input);
+        }
+
+        const start = new Date(year, month - 1, day);
         // Catch date constructor problems with years 0 to 99
         start.setFullYear(year);
 
-        const end = new Date(year, +m[1] - 1, +m[2] + 1);
+        const end = new Date(year, month - 1, day + 1);
         // Catch date constructor problems with years 0 to 99
         end.setFullYear(year);
 
+        // Weed out dates past the end of the month
+        if (start.getDate() !== day) {
+            throw new Error("Invalid date format " + input);
+        }
+
         return {
             year,
-            month: +m[1],
-            day: +m[2],
+            month,
+            day,
             start,
             end,
         };
@@ -422,6 +440,7 @@ function parseDate (input) {
 
         const start = new Date(+s + ((yearDay - 1) * 86400000));
 
+        // Weed out invalid -366 days
         if (start.getFullYear() !== year) {
             throw new Error("Invalid date format " + input);
         }
