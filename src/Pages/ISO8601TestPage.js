@@ -9,7 +9,7 @@ export default function ISO8601TestPage () {
         }
         return "";
     });
-    const testValues = ["2", "20", "202", "2021", "2021-01", "2021-01-18", "2021-01-18T15", "2021-01-18T15:30", "2021-01-18T15:30:00", "2021-W03", "2021-W03-1", "2021-018", "20210623", "2021174", "2021W25", "2021W253", "2021-018T15", "2021-018T15:30", "2021-018T15:30:00", "2021-018T15:30:00.5", "2021051T10−05", "2021-018/P1M", "2021-018/P1DT1M", "R5/2021-018/P1W", "R3/2012-10-01T14:12:01/10T16:19:35", "R2/2012-10-01T14:12/12-10T16:19", "R2/2012-10-01T14:12:01/12-10T16:19" ];
+    const testValues = ["2", "20", "202", "2021", "2021-01", "2021-01-18", "2021-01-18T15", "2021-01-18T15:30", "2021-01-18T15:30:00", "2021-W03", "2021-W03-1", "2021-018", "20210623", "2021174", "2021W25", "2021W253", "2021-018T15", "2021-018T15:30", "2021-018T15:30:00", "2021-018T15:30:00.5", "2021051T10−05", "20210510TZ", "2021-018/P1M", "2021-018/P1DT1M", "R5/2021-018/P1W", "R3/2012-10-01T14:12:01/10T16:19:35", "R2/2012-10-01T14:12/12-10T16:19", "R2/2012-10-01T14:12:01/12-10T16:19" ];
 
     useEffect(() => {
         const title = `ISO8601 - ${inputValue}`;
@@ -59,11 +59,6 @@ export default function ISO8601TestPage () {
 function DateTimePreview ({ value, label = "" }) {
     const [ showCode, setShowCode ] = useState(false);
 
-    // @ts-ignore
-    const dateFormatter = (typeof value.year === "number" && value.year < 0) ?
-        { format: (/** @type {Date} */ d) => d.toISOString() }
-        : new Intl.DateTimeFormat([], { dateStyle: "long", timeStyle: "long" });
-
     const pStyle = { margin: 0 };
     const labelStyle = { ...pStyle, fontFamily: "monospace", color: "#333" };
     const hintStyle = {color:"#666",fontSize:"0.8em"};
@@ -81,16 +76,16 @@ function DateTimePreview ({ value, label = "" }) {
         <div style={boxStyle} onClick={() => setShowCode(!showCode)}>
             { label && <p style={labelStyle}>{label}</p> }
             <p style={pStyle}>
-                <time dateTime={value.start.toISOString()}>{dateFormatter.format(value.start)}</time>
+                <time dateTime={toISOString(value.start)}>{dateFormat(value.start)}</time>
                 <span style={hintStyle}> ≤ {type} &lt; </span>
-                <time dateTime={value.end.toISOString()}>{dateFormatter.format(value.end)}</time>
+                <time dateTime={toISOString(value.end)}>{dateFormat(value.end)}</time>
             </p>
             {
                 repetitions.map((d,i) =>
                     <p style={pStyle} key={i}>
-                        <time dateTime={d.start.toISOString()}>{dateFormatter.format(d.start)}</time>
+                        <time dateTime={toISOString(d.start)}>{dateFormat(d.start)}</time>
                         <span style={hintStyle}> ≤ {type} &lt; </span>
-                        <time dateTime={d.end.toISOString()}>{dateFormatter.format(d.end)}</time>
+                        <time dateTime={toISOString(d.end)}>{dateFormat(d.end)}</time>
                         {' '}<span style={hintStyle}>({getOrdinal(i + 1)} Repetition)</span>
                     </p>
                 )
@@ -149,5 +144,41 @@ function generatorToArray (generator, maxLength) {
  * @param {Date} date
  */
 function isValidDate (date) {
-    return !isNaN(+date);
+    return date instanceof Date && !isNaN(+date);
+}
+
+/**
+ * Intl.DateTimeFormat is so finicky about negative years and super positive years.
+ * @param {Date} date
+ */
+ function dateFormat (date) {
+    if (!isValidDate(date)) {
+        return <code style={{color:"darkred"}}>Javascript Date error</code>;
+    }
+
+    if (date.getFullYear() < 0)
+        return toISOString(date);
+
+    try {
+        const formatter = new Intl.DateTimeFormat([], { dateStyle: "long", timeStyle: "long" });
+        return formatter.format(date);
+    } catch (e) {
+        return toISOString(date);
+    }
+}
+
+/**
+ * Date.prototype.toISOString also doesn't like really large dates
+ * @param {Date} date
+ */
+function toISOString (date) {
+    if (!isValidDate(date)) {
+        return null;
+    }
+
+    try {
+        return date.toISOString();
+    } catch (e) {
+        return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
+    }
 }
