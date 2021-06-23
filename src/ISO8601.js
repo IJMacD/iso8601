@@ -380,11 +380,21 @@ function parseDate (input) {
         // Catch date constructor problems with years 0 to 99
         s.setFullYear(year);
 
-        const start = new Date(+s + ((+m[1] - 1) * 86400000));
+        const yearDay = +m[1];
+
+        if (yearDay < 1 || yearDay > 366) {
+            throw new Error("Invalid date format " + input);
+        }
+
+        const start = new Date(+s + ((yearDay - 1) * 86400000));
+
+        if (start.getFullYear() !== year) {
+            throw new Error("Invalid date format " + input);
+        }
 
         return {
             year,
-            yearDay: +m[1],
+            yearDay,
             start,
             end: new Date(year, start.getMonth(), start.getDate() + 1),
         };
