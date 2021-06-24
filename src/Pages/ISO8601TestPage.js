@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import * as ISO8601 from "../ISO8601";
-import { DateTimeIntervalSpec, DateTimeSpec, getIntervalInstances } from "../ISO8601";
 
 export default function ISO8601TestPage () {
     const [ inputValue, setInputValue ] = useState(() => {
@@ -30,10 +29,9 @@ export default function ISO8601TestPage () {
     let convertedInput, error;
 
     if (inputValue) {
-        try {
-            convertedInput = ISO8601.parse(inputValue);
-        } catch (e) {
-            error = e.message;
+        convertedInput = ISO8601.parse(inputValue);
+        if (!convertedInput) {
+            error = "Invalid Input: " + inputValue;
         }
     }
 
@@ -52,23 +50,28 @@ export default function ISO8601TestPage () {
 
 /**
  * @param {object} props
- * @param {import("../ISO8601").DateTimeSpec|import("../ISO8601").DateTimeIntervalSpec} props.value
+ * @param {import("../ISO8601").DateTime|import("../ISO8601").DateTimeIntervalSpec} props.value
  * @param {string} [props.label]
  * @returns
  */
 function DateTimePreview ({ value, label = "" }) {
     const [ showCode, setShowCode ] = useState(false);
 
+    // JUST FOR TESTING
+    if (!value) {
+        return <div style={{color:"red"}}>STILL TESTING</div>;
+    }
+
     const pStyle = { margin: 0 };
     const labelStyle = { ...pStyle, fontFamily: "monospace", color: "#333" };
     const hintStyle = {color:"#666",fontSize:"0.8em"};
     const boxStyle = { margin: 4, padding: 8, border: "1px solid #333", cursor: "pointer" };
 
-    const type = value instanceof DateTimeSpec ? "DateTime" : "DateTimeInterval";
+    const type = value instanceof ISO8601.DateTime ? "DateTime" : "DateTimeInterval";
 
-    const repetitions = value instanceof DateTimeIntervalSpec ? getRepetitions(value, 100) : [];
+    const repetitions = value instanceof ISO8601.DateTimeInterval ? getRepetitions(value, 100) : [];
 
-    if (!isValidDate(value.start) || !isValidDate(value.end)) {
+    if (!ISO8601.isValidDate(value.start) || !ISO8601.isValidDate(value.end)) {
         return <code style={{color:"darkred"}}>Javascript Date error {JSON.stringify(value)}</code>;
     }
 
@@ -90,7 +93,7 @@ function DateTimePreview ({ value, label = "" }) {
                     </p>
                 )
             }
-            { value instanceof DateTimeIntervalSpec && repetitions.length < value.repetitions &&
+            { value instanceof ISO8601.DateTimeInterval && repetitions.length < value.repetitions &&
                 <p style={{...pStyle, ...hintStyle}}>&hellip; {value.repetitions - repetitions.length} more not shown</p>
             }
             { showCode && <code>{JSON.stringify(value)}</code> }
@@ -103,7 +106,7 @@ function DateTimePreview ({ value, label = "" }) {
  */
 function getRepetitions(value, maxRepetitions = 10) {
     if (value.repetitions === Infinity) {
-        return generatorToArray(getIntervalInstances(value), maxRepetitions + 1).slice(1);
+        return generatorToArray(ISO8601.getIntervalInstances(value), maxRepetitions + 1).slice(1);
     }
 
     return [ ...ISO8601.getIntervalInstances(value) ].slice(1, 1 + maxRepetitions);
@@ -141,18 +144,11 @@ function generatorToArray (generator, maxLength) {
 }
 
 /**
- * @param {Date} date
- */
-function isValidDate (date) {
-    return date instanceof Date && !isNaN(+date);
-}
-
-/**
  * Intl.DateTimeFormat is so finicky about negative years and super positive years.
  * @param {Date} date
  */
  function dateFormat (date) {
-    if (!isValidDate(date)) {
+    if (!ISO8601.isValidDate(date)) {
         return <code style={{color:"darkred"}}>Javascript Date error</code>;
     }
 
@@ -172,7 +168,7 @@ function isValidDate (date) {
  * @param {Date} date
  */
 function toISOString (date) {
-    if (!isValidDate(date)) {
+    if (!ISO8601.isValidDate(date)) {
         return null;
     }
 
