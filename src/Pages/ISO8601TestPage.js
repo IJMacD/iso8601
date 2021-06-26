@@ -8,7 +8,8 @@ export default function ISO8601TestPage () {
         }
         return "";
     });
-    const testValues = ["2", "20", "202", "2021", "2021-01", "2021-01-18", "2021-01-18T15", "2021-01-18T15:30", "2021-01-18T15:30:00", "2021-W03", "2021-W03-1", "2021-018", "20210623", "2021174", "2021W25", "2021W253", "2021-018T15", "2021-018T15:30", "2021-018T15:30:00", "2021-018T15:30:00.5", "2021051T10−05", "20210510TZ", "2021-018/P1M", "2021-018/P1DT1M", "R5/2021-018/P1W", "R3/2012-10-01T14:12:01/10T16:19:35", "R2/2012-10-01T14:12/12-10T16:19", "R2/2012-10-01T14:12:01/12-10T16:19" ];
+    const [ showExamples, setShowExamples ] = useState(false);
+    const testValues = ["2", "20", "202", "2021", "2021-01", "2021-01-18", "2021-01-18T15", "2021-01-18T15:30", "2021-01-18T15:30:00", "2021-W03", "2021-W03-1", "2021-018", "20210623", "2021174", "2021W25", "2021W253", "2021-018T15", "2021-018T15.5", "2021-018T15:30","2021-018T15:30.5", "2021-018T15:30:00", "2021-018T15:30:00.5", "2021051T10−05", "2021051T10+09", "20210510T14Z", "20210510TZ", "2021-018/P1M", "2021-018/P1DT1M", "R5/2021-018/P1W", "R3/2012-10-01T14:12:01/10T16:19:35", "R2/2012-10-01T14:12/12-10T16:19", "R2/2012-10-01T14:12:01/12-10T16:19" ];
 
     useEffect(() => {
         const title = `ISO8601 - ${inputValue}`;
@@ -35,14 +36,21 @@ export default function ISO8601TestPage () {
         }
     }
 
+    const exampleHeaderClass = showExamples ?
+        "CollapsibleHeader CollapsibleHeader--expanded" :
+        "CollapsibleHeader";
+
     return (
         <div style={{padding: "2em", display: "flex", flexDirection: "column" }}>
             <input value={inputValue} onChange={e => setInputValue(e.target.value)} style={{margin:4,fontSize:"1.5em"}} placeholder="Input" />
             { error && <p style={{color:"red"}}>{error}</p> }
             { convertedInput && <DateTimePreview value={convertedInput} label={`Input: ${inputValue}`} /> }
-            <h2>Test Values</h2>
+            <h2 onClick={() => setShowExamples(!showExamples)} className={exampleHeaderClass}>
+                <span>Examples</span>
+                <ArrowIndicator invert={showExamples} style={{ width: 16 }} />
+            </h2>
             {
-                testValues.map((v, i) => <DateTimePreview value={ISO8601.parse(v)} label={`Input: ${v}`} key={i} />)
+                showExamples && testValues.map((v, i) => <DateTimePreview value={ISO8601.parse(v)} label={`Input: ${v}`} key={i} />)
             }
         </div>
     )
@@ -177,4 +185,14 @@ function toISOString (date) {
     } catch (e) {
         return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
     }
+}
+
+function ArrowIndicator ({ invert, style }) {
+    const d = invert ?
+        "M 0 7 L 5 2 L 10 7 Z" :
+        "M 0 2 L 5 7 L 10 2 Z";
+
+    return <svg viewBox="0 0 10 10" style={style}>
+        <path d={d} />
+    </svg>
 }
