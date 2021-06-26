@@ -50,7 +50,7 @@ export default function ISO8601TestPage () {
 
 /**
  * @param {object} props
- * @param {import("../ISO8601").DateTime|import("../ISO8601").DateTimeIntervalSpec} props.value
+ * @param {import("../ISO8601").DateTime|import("../ISO8601").DateTimeInterval} props.value
  * @param {string} [props.label]
  * @returns
  */
@@ -102,7 +102,7 @@ function DateTimePreview ({ value, label = "" }) {
 }
 
 /**
- * @param {ISO8601.DateTimeIntervalSpec} value
+ * @param {ISO8601.DateTimeInterval} value
  */
 function getRepetitions(value, maxRepetitions = 10) {
     if (value.repetitions === Infinity) {

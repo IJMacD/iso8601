@@ -147,35 +147,3 @@ describe("Fractional", () => {
         });
     });
 });
-
-test("Invalid", () => {
-    expect(parseTime("0")).toBeNull();
-    expect(parseTime("1")).toBeNull();
-
-    expect(parseTime("24")).toBeNull();
-    expect(parseTime("30")).toBeNull();
-
-    expect(parseTime("000")).toBeNull();
-    expect(parseTime("001")).toBeNull();
-
-    expect(parseTime("24:30")).toBeNull();
-    expect(parseTime("30:30")).toBeNull();
-    expect(parseTime("00:60")).toBeNull();
-    expect(parseTime("23:60")).toBeNull();
-
-    expect(parseTime("00:30:61")).toBeNull();
-    expect(parseTime("00:30:61")).toBeNull();
-    expect(parseTime("23:30:61")).toBeNull();
-    expect(parseTime("23:30:61")).toBeNull();
-    expect(parseTime("00:60:10")).toBeNull();
-    expect(parseTime("00:60:10")).toBeNull();
-    expect(parseTime("23:60:10")).toBeNull();
-    expect(parseTime("23:60:10")).toBeNull();
-
-    expect(parseTime("00+000")).toBeNull();
-    expect(parseTime("00Z+00")).toBeNull();
-    expect(parseTime("00+00Z")).toBeNull();
-
-    expect(parseTime("23.3:10.3")).toBeNull();
-    expect(parseTime("23:10.3:10.3")).toBeNull();
-});

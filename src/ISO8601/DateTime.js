@@ -1,6 +1,8 @@
 import { parseDate } from "./parseDate";
 import { parseTime } from "./parseTime";
 import { rationalise } from "./util";
+import { validateDateSpec } from "./validateDateSpec";
+import { validateTimeSpec } from "./validateTimeSpec";
 
 export class DateTime {
     /** @type {?number} */
@@ -209,7 +211,10 @@ export class DateTime {
     }
 
     /**
-     *
+     * Parse and validate input returns a DateTime spec object if valid
+     * or null if invalid.
+     * This DateTime spec object can then be passed to the constructor of
+     * the DateTime class if it is valid
      * @param {string} input
      * @returns {import(".").DateSpec & import(".").TimeSpec}
      */
@@ -222,7 +227,7 @@ export class DateTime {
             const timeSpec = parseTime(timeInput);
 
             // Both parts must be valid
-            if (dateSpec === null || timeSpec === null) {
+            if (!validateDateSpec(dateSpec) || !validateTimeSpec(timeSpec)) {
                 return null;
             }
 
@@ -237,6 +242,12 @@ export class DateTime {
             return { ...dateSpec, ...timeSpec };
         }
 
-        return parseDate(input);
+        const spec = parseDate(input);
+
+        if (validateDateSpec(spec)) {
+            return spec;
+        }
+
+        return null;
     }
 }

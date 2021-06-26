@@ -1,4 +1,6 @@
 /**
+ * Parses string as a time spec
+ * Returns null if it was not a recognised format
  * @param {string} input
  * @returns {import(".").TimeSpec}
  */
@@ -38,10 +40,6 @@ export function parseTime(input) {
     if (m) {
         out.hour = +m[1];
 
-        if (out.hour < 0 || out.hour >= 24) {
-            return null;
-        }
-
         return out;
     }
 
@@ -49,10 +47,6 @@ export function parseTime(input) {
     if (m) {
         out.hour = +m[1];
         out.minute = +m[2];
-
-        if (out.hour < 0 || out.hour >= 24 || out.minute < 0 || out.minute >= 60) {
-            return null;
-        }
 
         return out;
     }
@@ -62,13 +56,6 @@ export function parseTime(input) {
         out.hour = +m[1];
         out.minute = +m[2];
         out.second = +m[3];
-
-        if (out.hour < 0 || out.hour >= 24          // Allow fractions up to 24
-            || out.minute < 0 || out.minute >= 60   // Allow fractions up to 60
-            || out.second < 0 || out.second >= 61   // Allow fractions up to leap second
-        ) {
-            return null;
-        }
 
         return out;
     }
