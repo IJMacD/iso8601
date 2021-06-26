@@ -98,8 +98,7 @@ export function parseDate (input) {
         };
 
         // Catch bad week 53
-        const check = new DateTime(spec);
-        if (week === 53 && isValidDate(check.start) && check.start.getFullYear() !== year) {
+        if (!isValidWeek(spec)) {
             return null;
         }
 
@@ -125,8 +124,7 @@ export function parseDate (input) {
         };
 
         // Catch bad week 53
-        const check = new DateTime(spec);
-        if (week === 53 && isValidDate(check.start) && check.start.getFullYear() !== year) {
+        if (!isValidWeek(spec)) {
             return null;
         }
 
@@ -160,4 +158,34 @@ export function parseDate (input) {
     }
 
     return null;
+}
+
+function isValidWeek({ year, week }) {
+    if (week < 1 || week > 53) {
+        return false;
+    }
+
+    // Week 53 needs extra validation
+    if (week === 53) {
+        const check = new DateTime({ year, week });
+
+        // If it's not a vaild date then it's probably too far into the future
+        // we won't bother validating in that case
+        if (!isValidDate(check.start)) {
+            return true;
+        }
+
+        // Monday's year must be same as calnedar year
+        if (check.start.getFullYear() !== year) {
+            return false;
+        }
+
+        // Monday's date must be either 27 or 28
+        const d = check.start.getDate();
+        if (d < 27 || d > 28) {
+            return false;
+        }
+    }
+
+    return true;
 }

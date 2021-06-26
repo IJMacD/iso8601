@@ -58,7 +58,7 @@ describe("Expanded", () => {
         expect(parseDate("2000-W06")).toStrictEqual({year: 2000, week: 6});
         expect(parseDate("2000-W08")).toStrictEqual({year: 2000, week: 8});
         expect(parseDate("2000-W52")).toStrictEqual({year: 2000, week: 52});
-        expect(parseDate("2001-W53")).toStrictEqual({year: 2001, week: 53});
+        expect(parseDate("2004-W53")).toStrictEqual({year: 2004, week: 53});
     });
 
     test("Year-Week-WeekDay", () => {
@@ -67,7 +67,7 @@ describe("Expanded", () => {
         expect(parseDate("2000-W06-7")).toStrictEqual({year: 2000, week: 6,     weekDay: 7});
         expect(parseDate("2000-W08-7")).toStrictEqual({year: 2000, week: 8,     weekDay: 7});
         expect(parseDate("2000-W52-1")).toStrictEqual({year: 2000, week: 52,    weekDay: 1});
-        expect(parseDate("2001-W53-1")).toStrictEqual({year: 2001, week: 53,    weekDay: 1});
+        expect(parseDate("2004-W53-1")).toStrictEqual({year: 2004, week: 53,    weekDay: 1});
     });
 
     test("Year-YearDay", () => {
@@ -104,7 +104,7 @@ describe("Compressed", () => {
         expect(parseDate("2000W06")).toStrictEqual({year: 2000, week: 6});
         expect(parseDate("2000W08")).toStrictEqual({year: 2000, week: 8});
         expect(parseDate("2000W52")).toStrictEqual({year: 2000, week: 52});
-        expect(parseDate("2001W53")).toStrictEqual({year: 2001, week: 53});
+        expect(parseDate("2004W53")).toStrictEqual({year: 2004, week: 53});
     });
 
     test("YearWeekWeekDay", () => {
@@ -113,7 +113,7 @@ describe("Compressed", () => {
         expect(parseDate("2000W067")).toStrictEqual({year: 2000, week: 6,     weekDay: 7});
         expect(parseDate("2000W087")).toStrictEqual({year: 2000, week: 8,     weekDay: 7});
         expect(parseDate("2000W521")).toStrictEqual({year: 2000, week: 52,    weekDay: 1});
-        expect(parseDate("2001W531")).toStrictEqual({year: 2001, week: 53,    weekDay: 1});
+        expect(parseDate("2004W531")).toStrictEqual({year: 2004, week: 53,    weekDay: 1});
     });
 
     test("YearYearDay", () => {
@@ -172,6 +172,49 @@ describe("+- Year", () => {
     });
 });
 
+test("Week 53", () => {
+    expect(parseDate("2000-W53")).toBeNull();
+    expect(parseDate("2001-W53")).toBeNull();
+    expect(parseDate("2002-W53")).toBeNull();
+    expect(parseDate("2003-W53")).toBeNull();
+    expect(parseDate("2004-W53")).toStrictEqual({ year: 2004, week: 53 });  // 2004-12-27 Leap Year
+    expect(parseDate("2005-W53")).toBeNull();
+    expect(parseDate("2006-W53")).toBeNull();
+    expect(parseDate("2007-W53")).toBeNull();
+    expect(parseDate("2008-W53")).toBeNull();
+    expect(parseDate("2009-W53")).toStrictEqual({ year: 2009, week: 53 });  // 2009-12-28
+    expect(parseDate("2010-W53")).toBeNull();
+    expect(parseDate("2011-W53")).toBeNull();
+    expect(parseDate("2012-W53")).toBeNull();
+    expect(parseDate("2013-W53")).toBeNull();
+    expect(parseDate("2014-W53")).toBeNull();
+    expect(parseDate("2015-W53")).toStrictEqual({ year: 2015, week: 53 });  // 2015-12-28
+    expect(parseDate("2016-W53")).toBeNull();
+    expect(parseDate("2017-W53")).toBeNull();
+    expect(parseDate("2018-W53")).toBeNull();
+    expect(parseDate("2019-W53")).toBeNull();
+    expect(parseDate("2020-W53")).toStrictEqual({ year: 2020, week: 53 });  // 2020-12-28 Leap Year
+    expect(parseDate("2021-W53")).toBeNull();
+    expect(parseDate("2022-W53")).toBeNull();
+    expect(parseDate("2023-W53")).toBeNull();
+    expect(parseDate("2024-W53")).toBeNull();
+    expect(parseDate("2025-W53")).toBeNull();
+    expect(parseDate("2026-W53")).toStrictEqual({ year: 2026, week: 53 });  // 2026-12-28
+    expect(parseDate("2027-W53")).toBeNull();
+    expect(parseDate("2028-W53")).toBeNull();
+    expect(parseDate("2029-W53")).toBeNull();
+    expect(parseDate("2030-W53")).toBeNull();
+    expect(parseDate("2031-W53")).toBeNull();
+    expect(parseDate("2032-W53")).toStrictEqual({ year: 2032, week: 53 });  // 2026-12-27 Leap Year
+
+
+    expect(parseDate("2000-W531")).toBeNull();
+    expect(parseDate("2001-W531")).toBeNull();
+    expect(parseDate("2002-W531")).toBeNull();
+    expect(parseDate("2003-W531")).toBeNull();
+    expect(parseDate("2004-W531")).toStrictEqual({ year: 2004, week: 53, weekDay: 1 });
+});
+
 describe("Invalid", () => {
     test("Expanded", () => {
         expect(parseDate("-0")).toBeNull();
@@ -192,6 +235,7 @@ describe("Invalid", () => {
         expect(parseDate("2000-W53")).toBeNull();
         expect(parseDate("2001-W54")).toBeNull();
 
+        expect(parseDate("2000-W00-1")).toBeNull();
         expect(parseDate("2000-W01-0")).toBeNull();
         expect(parseDate("2000-W01-8")).toBeNull();
         expect(parseDate("2000-W01-01")).toBeNull();
@@ -200,5 +244,29 @@ describe("Invalid", () => {
         expect(parseDate("2000-000")).toBeNull();
         expect(parseDate("2000-367")).toBeNull();
         expect(parseDate("2001-366")).toBeNull();
+    });
+
+    test("Condensed", () => {
+        expect(parseDate("200013")).toBeNull();
+
+        expect(parseDate("10010229")).toBeNull();
+        expect(parseDate("20000230")).toBeNull();
+        expect(parseDate("20000600")).toBeNull();
+        expect(parseDate("20000631")).toBeNull();
+        expect(parseDate("20000800")).toBeNull();
+        expect(parseDate("20000832")).toBeNull();
+
+        expect(parseDate("2000W00")).toBeNull();
+        expect(parseDate("2000W53")).toBeNull();
+        expect(parseDate("2001W54")).toBeNull();
+
+        expect(parseDate("2000W010")).toBeNull();
+        expect(parseDate("2000W018")).toBeNull();
+        expect(parseDate("2000W0101")).toBeNull();
+        expect(parseDate("2000W0110")).toBeNull();
+
+        expect(parseDate("2000000")).toBeNull();
+        expect(parseDate("2000367")).toBeNull();
+        expect(parseDate("2001366")).toBeNull();
     });
 });
