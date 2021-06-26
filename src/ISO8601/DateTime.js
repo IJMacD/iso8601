@@ -1,5 +1,6 @@
 import { parseDate } from "./parseDate";
 import { parseTime } from "./parseTime";
+import { rationalise } from "./util";
 
 export class DateTime {
     /** @type {?number} */
@@ -93,26 +94,36 @@ export class DateTime {
             }
         }
 
-        // Handle Time Part
-        if (typeof this.hour === "number") {
-            start.setHours(this.hour);
+        // Handle Time Part (including fractions)
+        const {
+            hour,
+            minute = (hour % 1) * 60,
+            second =  (minute % 1) * 60,
+        } = this;
+        const millisecond = (second % 1) * 1000;
 
-            if (typeof this.minute === "number") {
-                start.setMinutes(this.minute);
+        if (typeof hour === "number") {
+            start.setHours(hour);
 
-                if (typeof this.second === "number") {
-                    start.setSeconds(this.second);
+            if (typeof minute === "number") {
+                start.setMinutes(minute);
+
+                if (typeof second === "number") {
+                    start.setSeconds(second);
+
+                    if (typeof millisecond === "number") {
+                        start.setMilliseconds(millisecond);
+                    }
                 }
             }
         }
 
         // Handle Time Zone
         if (typeof this.zoneHour === "number") {
-            let offset = 0;
+            let offset = this.zoneHour * 60;
+
             if (typeof this.zoneMinute === "number") {
-                offset = this.zoneHour * 60 + Math.sign(this.zoneHour) * this.zoneMinute;
-            } else {
-                offset = this.zoneHour * 60;
+                offset += Math.sign(this.zoneHour) * this.zoneMinute;
             }
 
             const currOffset = start.getTimezoneOffset();
@@ -129,13 +140,34 @@ export class DateTime {
         const end = new Date(this.start);
 
         if (typeof this.second === "number") {
-            end.setSeconds(this.second + 1);
+            // Handle Fractions
+            if (this.second % 1) {
+                const [ denom ] = rationalise(this.second % 1);
+                const milliseconds = (1 / denom) * 1000;
+                end.setTime(+end.getTime() + milliseconds);
+            } else {
+                end.setSeconds(this.second + 1);
+            }
         }
         else if (typeof this.minute === "number") {
-            end.setMinutes(this.minute + 1);
+            // Handle Fractions
+            if (this.minute % 1) {
+                const [ denom ] = rationalise(this.minute % 1);
+                const seconds = (1 / denom) * 60;
+                end.setTime(+end.getTime() + seconds * 1000);
+            } else {
+                end.setMinutes(this.minute + 1);
+            }
         }
         else if (typeof this.hour === "number") {
-            end.setHours(this.hour + 1);
+            // Handle Fractions
+            if (this.hour % 1) {
+                const [ denom ] = rationalise(this.hour % 1);
+                const minutes = (1 / denom) * 60;
+                end.setTime(+end.getTime() + minutes * 60 * 1000);
+            } else {
+                end.setHours(this.hour + 1);
+            }
         }
         else if (typeof this.day === "number") {
             end.setDate(this.day + 1);
@@ -168,6 +200,14 @@ export class DateTime {
         return end;
     }
 
+    toJSON () {
+        return ({
+            ...this,
+            start: this.start.toISOString(),
+            end: this.end.toISOString(),
+        });
+    }
+
     /**
      *
      * @param {string} input
@@ -181,8 +221,17 @@ export class DateTime {
             const dateSpec = parseDate(dateInput);
             const timeSpec = parseTime(timeInput);
 
+            // Both parts must be valid
             if (dateSpec === null || timeSpec === null) {
                 return null;
+            }
+
+            // The date part must specify a specific day
+            if (typeof dateSpec.day !== "number"
+                && typeof dateSpec.weekDay !== "number"
+                && typeof dateSpec.yearDay !== "number"
+            ) {
+                return null
             }
 
             return { ...dateSpec, ...timeSpec };

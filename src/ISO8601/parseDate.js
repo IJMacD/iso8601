@@ -65,6 +65,10 @@ export function parseDate (input) {
             return null;
         }
 
+        if (day < 1) {
+            return null;
+        }
+
         const s = {
             year,
             month,

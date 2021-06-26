@@ -7,7 +7,7 @@ export function parsePeriod(input) {
         return null;
     }
 
-    const [datePart, timePart] = input.substr(1).split("T");
+    const [datePart, timePart] = input.replace(/,/g,".").substr(1).split("T");
 
     const out = {};
 

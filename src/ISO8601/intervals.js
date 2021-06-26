@@ -1,8 +1,8 @@
 import { addDateAndPeriod } from "./calc";
 
 /**
- * @param {DateTimeIntervalSpec} value
- * @returns {Generator<DateTimeIntervalSpec>}
+ * @param {import(".").DateTimeInterval} value
+ * @returns {Generator<import(".").DateTimeInterval>}
  */
 
 

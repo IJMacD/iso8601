@@ -90,15 +90,13 @@ export class DateTimeInterval {
 
             // "Range part is not a valid period " + partB;
             return null;
-        } else {
-            // console.debug(e.message);
+        }
 
-            const period = parsePeriod(partA);
+        // console.debug(e.message);
 
-            if (!period) {
-                return null;
-            }
+        const period = parsePeriod(partA);
 
+        if (period) {
             const specB = DateTime.parse(partB);
 
             if (partB) {
@@ -106,11 +104,9 @@ export class DateTimeInterval {
 
                 return { period, last, repetitions };
             }
-
-            // "Range part is not valid DateTime: " + partB;
-            return null;
         }
 
-        // unreachable
+        // "Range part is not valid DateTime: " + partB;
+        return null;
     }
 }
