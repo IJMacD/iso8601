@@ -133,7 +133,7 @@ When designing hobby APIs I tend to use ISO8601 ranges for specifying data perio
 
 ## Read More
 
-* http://www.iso.org/iso/catalogue_detail?csnumber=40874
+* https://www.iso.org/standard/70907.html
 * https://web.archive.org/web/20171020084445/https://www.loc.gov/standards/datetime/ISO_DIS%208601-1.pdf
 * https://www.wikiwand.com/en/ISO_8601
 * https://www.wikiwand.com/en/ISO_week_date
