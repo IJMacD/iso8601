@@ -29,9 +29,19 @@ export function validateTimeSpec (spec) {
                 return false;
             }
 
+            // Only the smallest element is allowed fractions
+            if (hour % 1) {
+                return false;
+            }
+
             if (typeof second === "number") {
                  // Allow fractions up to leap second
                 if (second < 0 || second >= 61) {
+                    return false;
+                }
+
+                // Only the smallest element is allowed fractions
+                if (minute % 1) {
                     return false;
                 }
             }
