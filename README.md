@@ -122,6 +122,15 @@ When designing hobby APIs I tend to use ISO8601 ranges for specifying data perio
     PT9H/2021-01-18T14
     PT9H/2021-W03-1T14
 
+#### Repeating Interval
+
+    R/2021-018/P1W
+    R/2021-018/021
+    R/P1W/2021-018
+    R10/2021-018/P1W
+    R10/2021-018/021
+    R10/P1W/2021-018
+
 ## Read More
 
 * http://www.iso.org/iso/catalogue_detail?csnumber=40874
