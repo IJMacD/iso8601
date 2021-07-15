@@ -99,7 +99,7 @@ export class DateTimeInterval {
         if (period) {
             const specB = DateTime.parse(partB);
 
-            if (partB) {
+            if (specB) {
                 const last = new DateTime(specB);
 
                 return { period, last, repetitions };

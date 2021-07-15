@@ -2,12 +2,7 @@ import { useEffect, useState } from "react";
 import * as ISO8601 from "../ISO8601";
 
 export default function ISO8601TestPage () {
-    const [ inputValue, setInputValue ] = useState(() => {
-        if (window.location.hash.length > 1) {
-            return window.location.hash.substr(1);
-        }
-        return "";
-    });
+    const [ inputValue, setInputValue ] = useState(getHashValue);
     const [ showExamples, setShowExamples ] = useState(false);
     const testValues = ["2", "20", "202", "2021", "2021-01", "2021-01-18", "2021-01-18T15", "2021-01-18T15:30", "2021-01-18T15:30:00", "2021-W03", "2021-W03-1", "2021-018", "20210623", "2021174", "2021W25", "2021W253", "2021-018T15", "2021-018T15.5", "2021-018T15:30","2021-018T15:30.5", "2021-018T15:30:00", "2021-018T15:30:00.5", "2021051T10−05", "2021051T10+09", "20210510T14Z", "20210510TZ", "2021-018/P1M", "2021-018/P1DT1M", "R5/2021-018/P1W", "R3/2012-10-01T14:12:01/10T16:19:35", "R2/2012-10-01T14:12/12-10T16:19", "R2/2012-10-01T14:12:01/12-10T16:19" ];
 
@@ -19,7 +14,7 @@ export default function ISO8601TestPage () {
 
     useEffect(() => {
         function cb () {
-            setInputValue(window.location.hash.substr(1));
+            setInputValue(getHashValue());
         }
 
         window.addEventListener("hashchange", cb);
@@ -56,6 +51,13 @@ export default function ISO8601TestPage () {
     )
 }
 
+function getHashValue() {
+    if (window.location.hash.length > 1) {
+        return decodeURIComponent(window.location.hash.substr(1));
+    }
+    return "";
+}
+
 /**
  * @param {object} props
  * @param {import("../ISO8601").DateTime|import("../ISO8601").DateTimeInterval} props.value
@@ -77,7 +79,16 @@ function DateTimePreview ({ value, label = "" }) {
 
     const type = value instanceof ISO8601.DateTime ? "DateTime" : "DateTimeInterval";
 
-    const repetitions = value instanceof ISO8601.DateTimeInterval ? getRepetitions(value, 100) : [];
+    let repetitions = [];
+
+    if (value instanceof ISO8601.DateTimeInterval) {
+        try {
+            repetitions = getRepetitions(value, 100);
+        } catch (e) {
+            // JUST FOR TESTING
+            return <div style={{color:"red"}}>STILL TESTING</div>;
+        }
+    }
 
     if (!ISO8601.isValidDate(value.start) || !ISO8601.isValidDate(value.end)) {
         return <code style={{color:"darkred"}}>Javascript Date error {JSON.stringify(value)}</code>;
